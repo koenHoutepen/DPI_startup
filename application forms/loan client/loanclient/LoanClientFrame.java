@@ -126,7 +126,7 @@ public class LoanClientFrame extends JFrame {
 
 				Destination sendDestination; // reference to a queue/topic destination
 				MessageProducer producer; // for sending messages
-				
+
 			}
 		});
 
