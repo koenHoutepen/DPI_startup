@@ -5,13 +5,11 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Serializable;
-import java.util.Properties;
+import java.util.Observable;
+import java.util.Observer;
 
-import javax.jms.*;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -23,10 +21,13 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 
+import controllers.receiveMessageController;
+import controllers.sendMessageController;
+import interfaces.IsendMessageInterface;
 import messaging.requestreply.RequestReply;
 import model.loan.*;
 
-public class LoanClientFrame extends JFrame {
+public class LoanClientFrame extends JFrame implements Observer{
 
 	/**
 	 * 
@@ -41,11 +42,16 @@ public class LoanClientFrame extends JFrame {
 	private JLabel lblNewLabel;
 	private JLabel lblNewLabel_1;
 	private JTextField tfTime;
+	private IsendMessageInterface sendergateway;
+	private receiveMessageController receivergateway;
 
 	/**
 	 * Create the frame.
 	 */
 	public LoanClientFrame() {
+		sendergateway = new sendMessageController();
+		receivergateway = new receiveMessageController("ReplyToClient");
+		receivergateway.addObserver(this::update);
 		setTitle("Loan Client");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -121,11 +127,7 @@ public class LoanClientFrame extends JFrame {
 				LoanRequest request = new LoanRequest(ssn,amount,time);
 				listModel.addElement( new RequestReply<LoanRequest,LoanReply>(request, null));	
 				// todo:  send the JMS with request to Loan Broker
-				Connection connection; // to connect to the ActiveMQ
-				Session session; // session for creating messages, producers and
-
-				Destination sendDestination; // reference to a queue/topic destination
-				MessageProducer producer; // for sending messages
+				sendergateway.messageSomeOne(request, "MessageFromLoanClient");
 
 			}
 		});
@@ -156,29 +158,49 @@ public class LoanClientFrame extends JFrame {
 	 * @param request
 	 * @return
 	 */
-   private RequestReply<LoanRequest,LoanReply> getRequestReply(LoanRequest request){    
-     
-     for (int i = 0; i < listModel.getSize(); i++){
-    	 RequestReply<LoanRequest,LoanReply> rr =listModel.get(i);
-    	 if (rr.getRequest() == request){
-    		 return rr;
-    	 }
-     }
-     
-     return null;
-   }
-	
+	private RequestReply<LoanRequest,LoanReply> getRequestReply(LoanRequest request){
+
+		for (int i = 0; i < listModel.getSize(); i++){
+			RequestReply<LoanRequest,LoanReply> rr =listModel.get(i);
+			if (rr.getRequest().equals(request)){
+				return rr;
+			}
+		}
+
+		return null;
+	}
+
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES","*");
 					LoanClientFrame frame = new LoanClientFrame();
-					
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+	}
+
+	@Override
+	public void update(Observable o, Object msg) {
+		RequestReply<LoanRequest, LoanReply> rr = null;
+		try {
+			rr = (RequestReply<LoanRequest, LoanReply>) ((ObjectMessage) msg).getObject();
+			System.out.println("following items:" + rr.getRequest() + " | " + rr.getReply());
+			for (int i = 0; i < listModel.size(); i++) {
+				//System.out.println("Listmodel	:" + listModel.get(i).getRequest());
+				//System.out.println("rr:			:" + rr.getRequest());
+				if ((listModel.get(i).getRequest().getSsn() == rr.getRequest().getSsn()) && (listModel.get(i).getRequest().getAmount() == rr.getRequest().getAmount()) && (listModel.get(i).getRequest().getTime() == rr.getRequest().getTime())) {
+					System.out.println("updating fields");
+					listModel.setElementAt(rr, i);
+					break;
+				}
+			}
+		} catch (JMSException e) {
+			e.printStackTrace();
+		}
 	}
 }
