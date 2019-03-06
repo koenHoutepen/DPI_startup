@@ -64,7 +64,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	public LoanBrokerFrame() {
 		//set up receivermessagecotrollers
 		receivemessageReply = new receiveMessageController("ReplyToBroker");
-		receivemessagerequest = new receiveMessageController("myFirstDestination");
+		receivemessagerequest = new receiveMessageController("MessageFromLoanClient");
 		receivemessageReply.addObserver(this::update);
 		receivemessagerequest.addObserver(this::update);
 		sendMessageController = new sendMessageController();
@@ -136,14 +136,15 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 			count++;
 			sendMessageController.messageSomeOne(newrequest, correlation, "toING");
 		}
-		if ((200000 < request.getAmount()) && (request.getAmount() < 300000) && (request.getTime() <= 20))
+		if ((200000 < request.getAmount()) && (request.getAmount() < 300000) && (request.getTime() <= 20)) //to ABN
 		{
 			count++;
 			sendMessageController.messageSomeOne(newrequest, correlation, "toABN");
 		}
-		if (request.getAmount() <= 250000 && request.getTime() <= 15) {
+		if (request.getAmount() <= 250000 && request.getTime() <= 15) // to Rabo
+		{
 			count++;
-			sendMessageController.messageSomeOne(newrequest, correlation, "toRABO");
+			sendMessageController.messageSomeOne(newrequest, correlation, "toRabo");
 		}
 
 		if (count != 0) {
