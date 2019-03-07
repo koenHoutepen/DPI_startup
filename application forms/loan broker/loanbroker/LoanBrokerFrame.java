@@ -69,6 +69,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 		receivemessagerequest.addObserver(this::update);
 		sendMessageController = new sendMessageController();
 		registerReturns = new ArrayList<>();
+        waitingForReply = new ArrayList<>();
 		setTitle("Loan Broker");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -167,6 +168,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 
 				for(BrokerObject object : registerReturns) {
 					if(object.getCorrelation().equals(correlation)) {
+					    System.out.println("kom je hier?");
 						if(object.add((BankInterestReply) ((ObjectMessage)arg).getObject()) == true){
 							finalMessage(object.getReply(), correlation);
 							break;
