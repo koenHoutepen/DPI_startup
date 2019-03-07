@@ -62,7 +62,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	 * Create the frame.
 	 */
 	public LoanBrokerFrame() {
-		//set up receivermessagecotrollers
+		//set up receivemessagecontrollers
 		receivemessageReply = new receiveMessageController("ReplyToBroker");
 		receivemessagerequest = new receiveMessageController("MessageFromLoanClient");
 		receivemessageReply.addObserver(this::update);
@@ -123,7 +123,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	public void add(LoanRequest loanRequest, BankInterestReply bankReply){
 		JListLine rr = getRequestReply(loanRequest);
 		if (rr!= null && bankReply != null){
-			rr.setBankReply(bankReply);;
+			rr.setBankReply(bankReply);
             list.repaint();
 		}		
 	}

@@ -25,7 +25,7 @@ public class sendMessageController implements IsendMessageInterface {
 
         try {
             Properties props = new Properties();
-            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,					                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,"org.apache.activemq.jndi.ActiveMQInitialContextFactory");
             props.setProperty(Context.PROVIDER_URL, "tcp://localhost:61616");
 
             props.put(("queue." + Queue), Queue);
@@ -54,7 +54,7 @@ public class sendMessageController implements IsendMessageInterface {
 
         try {
             Properties props = new Properties();
-            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,					                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
             props.setProperty(Context.PROVIDER_URL, "tcp://localhost:61616");
 
             props.put(("queue." + Queue), Queue);
@@ -88,7 +88,7 @@ public class sendMessageController implements IsendMessageInterface {
 
         try {
             Properties props = new Properties();
-            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,					                  "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
+            props.setProperty(Context.INITIAL_CONTEXT_FACTORY, "org.apache.activemq.jndi.ActiveMQInitialContextFactory");
             props.setProperty(Context.PROVIDER_URL, "tcp://localhost:61616");
 
             // connect to the Destination called “myFirstChannel”
