@@ -1,10 +1,10 @@
-package bank;
-
+package destinationclinics;
 
 import interfaces.IsendMessageInterface;
 import messaging.requestreply.RequestReply;
-import model.bank.BankInterestReply;
-import model.bank.BankInterestRequest;
+import model.destination.TransferQueryReply;
+import model.destination.TransferQueryRequest;
+import controllers.*;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -17,16 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import controllers.*;
 
-public class ING extends JFrame implements Observer {
+public class Topeka extends JFrame implements Observer {
 
 	private static final long serialVersionUID = 1L;
-	private IsendMessageInterface messageInterface;
+	private IsendMessageInterface sendmessageInterface;
 	private JPanel contentPane;
 	private JTextField tfReply;
-	private DefaultListModel<RequestReply<BankInterestRequest, BankInterestReply>> listModel = new DefaultListModel<RequestReply<BankInterestRequest, BankInterestReply>>();
-	private List<RequestReply<BankInterestRequest, String>> waitingForReply;
+	private DefaultListModel<RequestReply<TransferQueryRequest, TransferQueryReply>> listModel = new DefaultListModel<RequestReply<TransferQueryRequest, TransferQueryReply>>();
+	private List<RequestReply<TransferQueryRequest, String>> waitingForReply;
 	private receiveMessageController receiveController;
 
 	public static void main(String[] args) {
@@ -34,7 +33,7 @@ public class ING extends JFrame implements Observer {
 			public void run() {
 				try {
 					System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES","*");
-					ING frame = new ING();
+					Topeka frame = new Topeka();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -44,11 +43,11 @@ public class ING extends JFrame implements Observer {
 	}
 
 
-	public ING() {
-        messageInterface = new sendMessageController();
-        receiveController = new receiveMessageController("toING");
+	public Topeka() {
+        sendmessageInterface = new sendMessageController();
+        receiveController = new receiveMessageController("toTopeka");
 		receiveController.addObserver(this::update);
-		setTitle("JMS Bank - ING");
+		setTitle("Topeka Asylum");
 
 		waitingForReply = new ArrayList<>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,7 +71,7 @@ public class ING extends JFrame implements Observer {
 		gbc_scrollPane.gridy = 0;
 		contentPane.add(scrollPane, gbc_scrollPane);
 
-		JList<RequestReply<BankInterestRequest, BankInterestReply>> list = new JList<RequestReply<BankInterestRequest, BankInterestReply>>(listModel);
+		JList<RequestReply<TransferQueryRequest, TransferQueryReply>> list = new JList<RequestReply<TransferQueryRequest, TransferQueryReply>>(listModel);
 		scrollPane.setViewportView(list);
 
 		JLabel lblNewLabel = new JLabel("type reply");
@@ -96,9 +95,9 @@ public class ING extends JFrame implements Observer {
 		JButton btnSendReply = new JButton("send reply");
 		btnSendReply.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RequestReply<BankInterestRequest, BankInterestReply> rr = list.getSelectedValue();
-				double interest = Double.parseDouble((tfReply.getText()));
-				BankInterestReply reply = new BankInterestReply(interest,"ING");
+				RequestReply<TransferQueryRequest, TransferQueryReply> rr = list.getSelectedValue();
+				int capacity = Integer.parseInt((tfReply.getText()));
+				TransferQueryReply reply = new TransferQueryReply(capacity,"Topeka");
 				if (rr!= null && reply != null){
 					rr.setReply(reply);
 					list.repaint();
@@ -107,7 +106,7 @@ public class ING extends JFrame implements Observer {
 						System.out.println("Checking:" + i);
 						System.out.println(waitingForReply.get(i).getRequest().getAmount() + " | " + rr.getRequest().getAmount());
 						if(waitingForReply.get(i).getRequest() == rr.getRequest()){
-							messageInterface.messageSomeOne(rr.getReply(), waitingForReply.get(i).getReply(), "ReplyToBroker");
+							sendmessageInterface.messageSomeOne(rr.getReply(), waitingForReply.get(i).getReply(), "ReplyToCenter");
 							break;
 						}
 					}
@@ -125,12 +124,12 @@ public class ING extends JFrame implements Observer {
 	@Override
 	public void update(Observable o, Object msg) {
 	    System.out.println("tijd");
-		BankInterestRequest bankinterestrequest;
+		TransferQueryRequest transferQueryRequest;
 		try {
-			bankinterestrequest = (BankInterestRequest) ((ObjectMessage) msg).getObject();
+			transferQueryRequest = (TransferQueryRequest) ((ObjectMessage) msg).getObject();
 			String correlation = ((ObjectMessage) msg).getJMSCorrelationID();
-			waitingForReply.add(new RequestReply<>(bankinterestrequest, correlation));
-			listModel.addElement(new RequestReply<>(bankinterestrequest, new BankInterestReply()));
+			waitingForReply.add(new RequestReply<>(transferQueryRequest, correlation));
+			listModel.addElement(new RequestReply<>(transferQueryRequest, new TransferQueryReply()));
 		} catch (JMSException e) {
 			e.printStackTrace();
 		}

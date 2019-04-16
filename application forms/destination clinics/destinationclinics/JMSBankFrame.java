@@ -1,4 +1,4 @@
-package bank;
+package destinationclinics;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,7 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-import model.bank.*;
+import model.destination.*;
 import messaging.requestreply.RequestReply;
 
 public class JMSBankFrame extends JFrame {
@@ -27,7 +27,7 @@ public class JMSBankFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField tfReply;
-	private DefaultListModel<RequestReply<BankInterestRequest, BankInterestReply>> listModel = new DefaultListModel<RequestReply<BankInterestRequest, BankInterestReply>>();
+	private DefaultListModel<RequestReply<TransferQueryRequest, TransferQueryReply>> listModel = new DefaultListModel<RequestReply<TransferQueryRequest, TransferQueryReply>>();
 	
 	/**
 	 * Launch the application.
@@ -49,7 +49,7 @@ public class JMSBankFrame extends JFrame {
 	 * Create the frame.
 	 */
 	public JMSBankFrame() {
-		setTitle("JMS Bank - AbnAmro AMRO");
+		setTitle("JMS Bank - Bedlam AMRO");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -71,7 +71,7 @@ public class JMSBankFrame extends JFrame {
 		gbc_scrollPane.gridy = 0;
 		contentPane.add(scrollPane, gbc_scrollPane);
 		
-		JList<RequestReply<BankInterestRequest, BankInterestReply>> list = new JList<RequestReply<BankInterestRequest, BankInterestReply>>(listModel);
+		JList<RequestReply<TransferQueryRequest, TransferQueryReply>> list = new JList<RequestReply<TransferQueryRequest, TransferQueryReply>>(listModel);
 		scrollPane.setViewportView(list);
 		
 		JLabel lblNewLabel = new JLabel("type reply");
@@ -95,9 +95,9 @@ public class JMSBankFrame extends JFrame {
 		JButton btnSendReply = new JButton("send reply");
 		btnSendReply.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RequestReply<BankInterestRequest, BankInterestReply> rr = list.getSelectedValue();
+				RequestReply<TransferQueryRequest, TransferQueryReply> rr = list.getSelectedValue();
 				double interest = Double.parseDouble((tfReply.getText()));
-				BankInterestReply reply = new BankInterestReply(interest,"AbnAmro AMRO");
+				TransferQueryReply reply = new TransferQueryReply(interest,"Bedlam AMRO");
 				if (rr!= null && reply != null){
 					rr.setReply(reply);
 	                list.repaint();

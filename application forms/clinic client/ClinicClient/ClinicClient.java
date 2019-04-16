@@ -1,4 +1,4 @@
-package loanclient;
+package ClinicClient;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,9 +25,9 @@ import controllers.receiveMessageController;
 import controllers.sendMessageController;
 import interfaces.IsendMessageInterface;
 import messaging.requestreply.RequestReply;
-import model.loan.*;
+import model.Origin.*;
 
-public class LoanClientFrame extends JFrame implements Observer{
+public class ClinicClient extends JFrame implements Observer{
 
 	/**
 	 * 
@@ -35,24 +35,24 @@ public class LoanClientFrame extends JFrame implements Observer{
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private JTextField tfSSN;
-	private DefaultListModel<RequestReply<LoanRequest,LoanReply>> listModel = new DefaultListModel<RequestReply<LoanRequest,LoanReply>>();
-	private JList<RequestReply<LoanRequest,LoanReply>> requestReplyList;
+	private DefaultListModel<RequestReply<TransferRequest, TransferReply>> listModel = new DefaultListModel<RequestReply<TransferRequest, TransferReply>>();
+	private JList<RequestReply<TransferRequest, TransferReply>> requestReplyList;
 
 	private JTextField tfAmount;
 	private JLabel lblNewLabel;
 	private JLabel lblNewLabel_1;
-	private JTextField tfTime;
+	private JTextField tfOrigin;
 	private IsendMessageInterface sendergateway;
 	private receiveMessageController receivergateway;
 
 	/**
 	 * Create the frame.
 	 */
-	public LoanClientFrame() {
+	public ClinicClient() {
 		sendergateway = new sendMessageController();
 		receivergateway = new receiveMessageController("ReplyToClient");
 		receivergateway.addObserver(this::update);
-		setTitle("Loan Client");
+		setTitle("Clinic Client");
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 684, 619);
@@ -66,7 +66,7 @@ public class LoanClientFrame extends JFrame implements Observer{
 		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
-		JLabel lblBody = new JLabel("ssn");
+		JLabel lblBody = new JLabel("Clinic: ");
 		GridBagConstraints gbc_lblBody = new GridBagConstraints();
 		gbc_lblBody.insets = new Insets(0, 0, 5, 5);
 		gbc_lblBody.gridx = 0;
@@ -82,7 +82,7 @@ public class LoanClientFrame extends JFrame implements Observer{
 		contentPane.add(tfSSN, gbc_tfSSN);
 		tfSSN.setColumns(10);
 		
-		lblNewLabel = new JLabel("amount");
+		lblNewLabel = new JLabel("Patients in need of transfer");
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel.anchor = GridBagConstraints.WEST;
@@ -108,26 +108,26 @@ public class LoanClientFrame extends JFrame implements Observer{
 		gbc_lblNewLabel_1.gridy = 2;
 		contentPane.add(lblNewLabel_1, gbc_lblNewLabel_1);
 		
-		tfTime = new JTextField();
+		tfOrigin = new JTextField();
 		GridBagConstraints gbc_tfTime = new GridBagConstraints();
 		gbc_tfTime.insets = new Insets(0, 0, 5, 5);
 		gbc_tfTime.fill = GridBagConstraints.HORIZONTAL;
 		gbc_tfTime.gridx = 1;
 		gbc_tfTime.gridy = 2;
-		contentPane.add(tfTime, gbc_tfTime);
-		tfTime.setColumns(10);
+		contentPane.add(tfOrigin, gbc_tfTime);
+		tfOrigin.setColumns(10);
 		
-		JButton btnQueue = new JButton("send loan request");
+		JButton btnQueue = new JButton("send Transfer request");
 		btnQueue.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				int ssn = Integer.parseInt(tfSSN.getText());
+				String clinicName = tfSSN.getText();
+				setTitle("Origin Asylum: " + clinicName);
 				int amount = Integer.parseInt(tfAmount.getText());
-				int time = Integer.parseInt(tfTime.getText());				
+				String origin = tfOrigin.getText();
 				
-				LoanRequest request = new LoanRequest(ssn,amount,time);
-				listModel.addElement( new RequestReply<LoanRequest,LoanReply>(request, null));	
-				// todo:  send the JMS with request to Loan Broker
-				sendergateway.messageSomeOne(request, "MessageFromLoanClient");
+				TransferRequest request = new TransferRequest(clinicName,amount,origin);
+				listModel.addElement( new RequestReply<TransferRequest, TransferReply>(request, null));
+				sendergateway.messageSomeOne(request, "MessageFromClinicClient");
 
 			}
 		});
@@ -147,7 +147,7 @@ public class LoanClientFrame extends JFrame implements Observer{
 		gbc_scrollPane.gridy = 4;
 		contentPane.add(scrollPane, gbc_scrollPane);
 		
-		requestReplyList = new JList<RequestReply<LoanRequest,LoanReply>>(listModel);
+		requestReplyList = new JList<RequestReply<TransferRequest, TransferReply>>(listModel);
 		scrollPane.setViewportView(requestReplyList);	
        
 	}
@@ -158,10 +158,10 @@ public class LoanClientFrame extends JFrame implements Observer{
 	 * @param request
 	 * @return
 	 */
-	private RequestReply<LoanRequest,LoanReply> getRequestReply(LoanRequest request){
+	private RequestReply<TransferRequest, TransferReply> getRequestReply(TransferRequest request){
 
 		for (int i = 0; i < listModel.getSize(); i++){
-			RequestReply<LoanRequest,LoanReply> rr =listModel.get(i);
+			RequestReply<TransferRequest, TransferReply> rr =listModel.get(i);
 			if (rr.getRequest().equals(request)){
 				return rr;
 			}
@@ -175,7 +175,7 @@ public class LoanClientFrame extends JFrame implements Observer{
 			public void run() {
 				try {
 					System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES","*");
-					LoanClientFrame frame = new LoanClientFrame();
+					ClinicClient frame = new ClinicClient();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -186,14 +186,14 @@ public class LoanClientFrame extends JFrame implements Observer{
 
 	@Override
 	public void update(Observable o, Object msg) {
-		RequestReply<LoanRequest, LoanReply> rr = null;
+		RequestReply<TransferRequest, TransferReply> rr = null;
 		try {
-			rr = (RequestReply<LoanRequest, LoanReply>) ((ObjectMessage) msg).getObject();
+			rr = (RequestReply<TransferRequest, TransferReply>) ((ObjectMessage) msg).getObject();
 			System.out.println("following items:" + rr.getRequest() + " | " + rr.getReply());
 			for (int i = 0; i < listModel.size(); i++) {
 				//System.out.println("Listmodel	:" + listModel.get(i).getRequest());
 				//System.out.println("rr:			:" + rr.getRequest());
-				if ((listModel.get(i).getRequest().getSsn() == rr.getRequest().getSsn()) && (listModel.get(i).getRequest().getAmount() == rr.getRequest().getAmount()) && (listModel.get(i).getRequest().getTime() == rr.getRequest().getTime())) {
+				if ((listModel.get(i).getRequest().getOriginClientName() == rr.getRequest().getOriginClientName()) && (listModel.get(i).getRequest().getAmount() == rr.getRequest().getAmount()) && (listModel.get(i).getRequest().getOrigin() == rr.getRequest().getOrigin())) {
 					System.out.println("updating fields");
 					listModel.setElementAt(rr, i);
 					break;

@@ -1,37 +1,32 @@
-package bank;
-import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+package destinationclinics;
+
+
+import interfaces.IsendMessageInterface;
+import messaging.requestreply.RequestReply;
+import model.destination.TransferQueryReply;
+import model.destination.TransferQueryRequest;
+
+import javax.jms.JMSException;
+import javax.jms.ObjectMessage;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+import controllers.*;
 
-import javax.jms.*;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
-
-import controllers.receiveMessageController;
-import controllers.sendMessageController;
-import interfaces.IsendMessageInterface;
-import model.bank.*;
-import messaging.requestreply.RequestReply;
-
-public class AbnAmro extends JFrame implements Observer {
+public class Trenton extends JFrame implements Observer {
 
 	private static final long serialVersionUID = 1L;
 	private IsendMessageInterface messageInterface;
 	private JPanel contentPane;
 	private JTextField tfReply;
-	private DefaultListModel<RequestReply<BankInterestRequest, BankInterestReply>> listModel = new DefaultListModel<RequestReply<BankInterestRequest, BankInterestReply>>();
-	private List<RequestReply<BankInterestRequest, String>> waitingForReply;
+	private DefaultListModel<RequestReply<TransferQueryRequest, TransferQueryReply>> listModel = new DefaultListModel<RequestReply<TransferQueryRequest, TransferQueryReply>>();
+	private List<RequestReply<TransferQueryRequest, String>> waitingForReply;
 	private receiveMessageController receiveController;
 
 	public static void main(String[] args) {
@@ -39,7 +34,7 @@ public class AbnAmro extends JFrame implements Observer {
 			public void run() {
 				try {
 					System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES","*");
-					AbnAmro frame = new AbnAmro();
+					Trenton frame = new Trenton();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -49,11 +44,11 @@ public class AbnAmro extends JFrame implements Observer {
 	}
 
 
-	public AbnAmro() {
+	public Trenton() {
         messageInterface = new sendMessageController();
-        receiveController = new receiveMessageController("toABN");
+        receiveController = new receiveMessageController("toTrenton");
 		receiveController.addObserver(this::update);
-		setTitle("JMS Bank - Abn Amro");
+		setTitle("Trenton State Asylum");
 
 		waitingForReply = new ArrayList<>();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -77,7 +72,7 @@ public class AbnAmro extends JFrame implements Observer {
 		gbc_scrollPane.gridy = 0;
 		contentPane.add(scrollPane, gbc_scrollPane);
 
-		JList<RequestReply<BankInterestRequest, BankInterestReply>> list = new JList<RequestReply<BankInterestRequest, BankInterestReply>>(listModel);
+		JList<RequestReply<TransferQueryRequest, TransferQueryReply>> list = new JList<RequestReply<TransferQueryRequest, TransferQueryReply>>(listModel);
 		scrollPane.setViewportView(list);
 
 		JLabel lblNewLabel = new JLabel("type reply");
@@ -101,9 +96,9 @@ public class AbnAmro extends JFrame implements Observer {
 		JButton btnSendReply = new JButton("send reply");
 		btnSendReply.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				RequestReply<BankInterestRequest, BankInterestReply> rr = list.getSelectedValue();
-				double interest = Double.parseDouble((tfReply.getText()));
-				BankInterestReply reply = new BankInterestReply(interest,"AbnAmro");
+				RequestReply<TransferQueryRequest, TransferQueryReply> rr = list.getSelectedValue();
+				int capacity = Integer.parseInt((tfReply.getText()));
+				TransferQueryReply reply = new TransferQueryReply(capacity,"Trenton");
 				if (rr!= null && reply != null){
 					rr.setReply(reply);
 					list.repaint();
@@ -112,7 +107,7 @@ public class AbnAmro extends JFrame implements Observer {
 						System.out.println("Checking:" + i);
 						System.out.println(waitingForReply.get(i).getRequest().getAmount() + " | " + rr.getRequest().getAmount());
 						if(waitingForReply.get(i).getRequest() == rr.getRequest()){
-							messageInterface.messageSomeOne(rr.getReply(), waitingForReply.get(i).getReply(), "ReplyToBroker");
+							messageInterface.messageSomeOne(rr.getReply(), waitingForReply.get(i).getReply(), "ReplyToCenter");
 							break;
 						}
 					}
@@ -129,13 +124,13 @@ public class AbnAmro extends JFrame implements Observer {
 
 	@Override
 	public void update(Observable o, Object msg) {
-	    System.out.println("yoyo tijd");
-		BankInterestRequest bankinterestrequest;
+	    System.out.println("tijd");
+		TransferQueryRequest transferQueryRequest;
 		try {
-			bankinterestrequest = (BankInterestRequest) ((ObjectMessage) msg).getObject();
+			transferQueryRequest = (TransferQueryRequest) ((ObjectMessage) msg).getObject();
 			String correlation = ((ObjectMessage) msg).getJMSCorrelationID();
-			waitingForReply.add(new RequestReply<>(bankinterestrequest, correlation));
-			listModel.addElement(new RequestReply<>(bankinterestrequest, new BankInterestReply()));
+			waitingForReply.add(new RequestReply<>(transferQueryRequest, correlation));
+			listModel.addElement(new RequestReply<>(transferQueryRequest, new TransferQueryReply()));
 		} catch (JMSException e) {
 			e.printStackTrace();
 		}

@@ -2,9 +2,9 @@ package controllers;
 
 import interfaces.IsendMessageInterface;
 import messaging.requestreply.RequestReply;
-import model.bank.BankInterestReply;
-import model.bank.BankInterestRequest;
-import model.loan.LoanRequest;
+import model.destination.TransferQueryReply;
+import model.destination.TransferQueryRequest;
+import model.Origin.TransferRequest;
 
 import javax.jms.*;
 import javax.naming.Context;
@@ -21,7 +21,7 @@ public class sendMessageController implements IsendMessageInterface {
     public void senderGateway(){
 
     }
-    public void messageSomeOne(BankInterestReply request, String correlation, String Queue){
+    public void messageSomeOne(TransferQueryReply request, String correlation, String Queue){
 
         try {
             Properties props = new Properties();
@@ -50,7 +50,7 @@ public class sendMessageController implements IsendMessageInterface {
             e.printStackTrace();
         }
     }
-    public void messageSomeOne(BankInterestRequest request, String correlation, String Queue){
+    public void messageSomeOne(TransferQueryRequest request, String correlation, String Queue){
 
         try {
             Properties props = new Properties();
@@ -115,7 +115,7 @@ public class sendMessageController implements IsendMessageInterface {
             e.printStackTrace();
         }
     }
-    public void messageSomeOne(LoanRequest request, String Queue){
+    public void messageSomeOne(TransferRequest request, String Queue){
         Connection connection; // to connect to the ActiveMQ
         Session session; // session for creating messages, producers and
 

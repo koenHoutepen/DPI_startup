@@ -1,6 +1,6 @@
 package model.Broker;
 
-import model.bank.BankInterestReply;
+import model.destination.TransferQueryReply;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.List;
 
 public class BrokerObject {
     private int numberOut;
-    private List<BankInterestReply> replyList;
+    private List<TransferQueryReply> replyList;
     private String Correlation;
 
     public BrokerObject(int nummer, String cor){
@@ -18,10 +18,10 @@ public class BrokerObject {
 
     }
 
-    public boolean add(BankInterestReply reply){
+    public boolean add(TransferQueryReply reply){
         replyList.add(reply);
-        System.out.println("Expected returns: " + numberOut);
-        System.out.println("Current Returns: " + replyList.size());
+        System.out.println("Expected replies: " + numberOut);
+        System.out.println("Current replies: " + replyList.size());
         if(replyList.size() == numberOut){
             System.out.println("Returning true, sending to client after");
             return true;
@@ -34,8 +34,8 @@ public class BrokerObject {
     public String getCorrelation() {
         return Correlation;
     }
-    public BankInterestReply getReply(){
-        BankInterestReply finalReply = Collections.max(replyList, new BankInterestComp());
+    public TransferQueryReply getReply(){
+        TransferQueryReply finalReply = Collections.max(replyList, new TransferComparison());
         return finalReply;
     }
 }

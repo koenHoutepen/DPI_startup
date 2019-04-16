@@ -5,8 +5,8 @@ import java.io.Serializable;
 /**
  * This class stores pairs Request-Reply. We will use this class in Loan Client and ABN Amro applications
  *  in order to make it easier for us to store pairs Request-Reply as items in a GUI JList.
- *  For example, in Loan Client application it will be RequestReply<LoanRequest,LoanReply>, and
- *  in ABN Amro application it will be RequestReply<BankInterestRequest, BankInterestReply>.
+ *  For example, in Loan Client application it will be RequestReply<TransferRequest,TransferReply>, and
+ *  in ABN Amro application it will be RequestReply<TransferQueryRequest, TransferQueryReply>.
  * @author 884294
  *
  * @param <REQUEST>

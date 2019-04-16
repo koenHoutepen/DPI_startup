@@ -1,4 +1,4 @@
-package loanbroker;
+package transferbroker;
 
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -23,12 +23,12 @@ import controllers.sendMessageController;
 import interfaces.IsendMessageInterface;
 import messaging.requestreply.RequestReply;
 import model.Broker.BrokerObject;
-import model.bank.*;
-import model.loan.LoanReply;
-import model.loan.LoanRequest;
+import model.destination.*;
+import model.Origin.TransferReply;
+import model.Origin.TransferRequest;
 
 
-public class LoanBrokerFrame extends JFrame implements Observer {
+public class TransferCenter extends JFrame implements Observer {
 
 	/**
 	 * 
@@ -37,7 +37,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	private JPanel contentPane;
 	private DefaultListModel<JListLine> listModel = new DefaultListModel<JListLine>();
 	private JList<JListLine> list;
-	private List<RequestReply<LoanRequest, String>> waitingForReply;
+	private List<RequestReply<TransferRequest, String>> waitingForReply;
 	private IsendMessageInterface sendMessageController;
 	private receiveMessageController receivemessageReply;
 	private receiveMessageController receivemessagerequest;
@@ -48,7 +48,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 			public void run() {
 				try {
 					System.setProperty("org.apache.activemq.SERIALIZABLE_PACKAGES","*");
-					LoanBrokerFrame frame = new LoanBrokerFrame();
+					TransferCenter frame = new TransferCenter();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -61,16 +61,16 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	/**
 	 * Create the frame.
 	 */
-	public LoanBrokerFrame() {
+	public TransferCenter() {
 		//set up receivemessagecontrollers
-		receivemessageReply = new receiveMessageController("ReplyToBroker");
-		receivemessagerequest = new receiveMessageController("MessageFromLoanClient");
+		receivemessageReply = new receiveMessageController("ReplyToCenter");
+		receivemessagerequest = new receiveMessageController("MessageFromClinicClient");
 		receivemessageReply.addObserver(this::update);
 		receivemessagerequest.addObserver(this::update);
 		sendMessageController = new sendMessageController();
 		registerReturns = new ArrayList<>();
         waitingForReply = new ArrayList<>();
-		setTitle("Loan Broker");
+		setTitle("Transfer Center");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
 		contentPane = new JPanel();
@@ -96,11 +96,11 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 		scrollPane.setViewportView(list);		
 	}
 	
-	 private JListLine getRequestReply(LoanRequest request){    
+	 private JListLine getRequestReply(TransferRequest request){
 	     
 	     for (int i = 0; i < listModel.getSize(); i++){
 	    	 JListLine rr =listModel.get(i);
-	    	 if (rr.getLoanRequest() == request){
+	    	 if (rr.getTransferRequest() == request){
 	    		 return rr;
 	    	 }
 	     }
@@ -108,44 +108,44 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	     return null;
 	   }
 	
-	public void add(LoanRequest loanRequest){		
-		listModel.addElement(new JListLine(loanRequest));		
+	public void add(TransferRequest transferRequest){
+		listModel.addElement(new JListLine(transferRequest));
 	}
 	
 
-	public void add(LoanRequest loanRequest,BankInterestRequest bankRequest){
-		JListLine rr = getRequestReply(loanRequest);
+	public void add(TransferRequest transferRequest, TransferQueryRequest bankRequest){
+		JListLine rr = getRequestReply(transferRequest);
 		if (rr!= null && bankRequest != null){
 			rr.setBankRequest(bankRequest);
             list.repaint();
 		}		
 	}
 	
-	public void add(LoanRequest loanRequest, BankInterestReply bankReply){
-		JListLine rr = getRequestReply(loanRequest);
+	public void add(TransferRequest transferRequest, TransferQueryReply bankReply){
+		JListLine rr = getRequestReply(transferRequest);
 		if (rr!= null && bankReply != null){
 			rr.setBankReply(bankReply);
             list.repaint();
 		}		
 	}
 
-	private void addbrokerobject(String correlation, LoanRequest request) {
-		BankInterestRequest newrequest = new BankInterestRequest(request.getAmount(), request.getTime());
+	private void addbrokerobject(String correlation, TransferRequest request) {
+		TransferQueryRequest newrequest = new TransferQueryRequest(request.getAmount(), request.getOriginClientName());
 		int count = 0;
-		if (request.getAmount() <= 100000 && request.getTime() <= 10) // to ING
+		if (request.getAmount() <= 100000) // to Trenton
 		{
 			count++;
-			sendMessageController.messageSomeOne(newrequest, correlation, "toING");
+			sendMessageController.messageSomeOne(newrequest, correlation, "toTrenton");
 		}
-		if ((200000 < request.getAmount()) && (request.getAmount() < 300000) && (request.getTime() <= 20)) //to ABN
+		if ((200000 < request.getAmount()) && (request.getAmount() < 300000) ) //to Bedlam
 		{
 			count++;
-			sendMessageController.messageSomeOne(newrequest, correlation, "toABN");
+			sendMessageController.messageSomeOne(newrequest, correlation, "toBedlam");
 		}
-		if (request.getAmount() <= 250000 && request.getTime() <= 15) // to Rabo
+		if (request.getAmount() <= 250000 ) // to Topeka
 		{
 			count++;
-			sendMessageController.messageSomeOne(newrequest, correlation, "toRabo");
+			sendMessageController.messageSomeOne(newrequest, correlation, "toTopeka");
 		}
 
 		if (count != 0) {
@@ -154,7 +154,7 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 			registerReturns.add(new BrokerObject(count, correlation));
 			waitingForReply.add(new RequestReply<>(request, correlation));
 		} else {
-			sendMessageController.messageSomeOne(new RequestReply<>(request, new LoanReply(0, "Error, no banks meet criteria")), correlation, "ReplyToClient");
+			sendMessageController.messageSomeOne(new RequestReply<>(request, new TransferReply(0, "Error, no Asylums meet criteria")), correlation, "ReplyToClient");
 		}
 	}
 
@@ -162,14 +162,14 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		try {
-			if (((ObjectMessage) arg).getObject() instanceof BankInterestReply) {
+			if (((ObjectMessage) arg).getObject() instanceof TransferQueryReply) {
 				String correlation = ((ObjectMessage)arg).getJMSCorrelationID();
 				System.out.println("Received message");
 
 				for(BrokerObject object : registerReturns) {
 					if(object.getCorrelation().equals(correlation)) {
 					    System.out.println("kom je hier?");
-						if(object.add((BankInterestReply) ((ObjectMessage)arg).getObject()) == true){
+						if(object.add((TransferQueryReply) ((ObjectMessage)arg).getObject()) == true){
 							finalMessage(object.getReply(), correlation);
 							break;
 						}
@@ -181,8 +181,8 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 				}
 
 
-			} else if (((ObjectMessage) arg).getObject() instanceof LoanRequest) { // reply
-				LoanRequest loanrequest = (LoanRequest)((ObjectMessage)arg).getObject();
+			} else if (((ObjectMessage) arg).getObject() instanceof TransferRequest) { // reply
+				TransferRequest loanrequest = (TransferRequest)((ObjectMessage)arg).getObject();
 				String messageid = ((ObjectMessage)arg).getJMSMessageID();
 				addbrokerobject(messageid, loanrequest);
 			}
@@ -192,16 +192,16 @@ public class LoanBrokerFrame extends JFrame implements Observer {
 		}
 	}
 
-	private void finalMessage(BankInterestReply reply, String correlation){
+	private void finalMessage(TransferQueryReply reply, String correlation){
 		for (int i = 0; i < waitingForReply.size(); i++) {
 			System.out.println("Checking message: " + i);
 			System.out.println("Is this ok? " + waitingForReply.get(i).getReply() + " | " + correlation);
 			if(waitingForReply.get(i).getReply().equals(correlation)){
 				System.out.println("++ Adding message: " + i);
 				add(waitingForReply.get(i).getRequest(),reply);
-				LoanReply loanreply = new LoanReply(reply.getInterest(), reply.getQuoteId());
-				System.out.println("Sending:" + waitingForReply.get(i).getRequest() + "AND" + loanreply + "AND" + correlation);
-				sendMessageController.messageSomeOne(new RequestReply<>(waitingForReply.get(i).getRequest(), loanreply), correlation, "ReplyToClient");
+				TransferReply transferReply = new TransferReply(reply.getCapacity(), reply.getQuoteId());
+				System.out.println("Sending:" + waitingForReply.get(i).getRequest() + "AND" + transferReply + "AND" + correlation);
+				sendMessageController.messageSomeOne(new RequestReply<>(waitingForReply.get(i).getRequest(), transferReply), correlation, "ReplyToClient");
 
 				break;
 			}
